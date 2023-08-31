@@ -1,28 +1,109 @@
 import random
-import time
+import sqlite3
+import tkinter as tk
+from pathlib import Path
+from tkinter import ttk
+from typing import List, Tuple
+
+
+class TypingGameApp:
+    N, W, E, S = tk.N, tk.W, tk.E, tk.S
+
+    def __init__(self, root, database_path):
+        self.database_path = database_path
+        self.root = root
+        self.root.title("Typing Game")
+        self.mainframe = ttk.Frame(root, padding=(3, 3, 12, 12))
+
+        self.texts = self.load_texts(self.database_path)
+        # self.texts = ["apple", "banana", "You bought a book.", "I have a pen."]
+        self.current_text = ""
+
+        self.title_label = tk.Label(
+            self.mainframe, text="Typing Game", font=("Helvetica", 36)
+        )
+        self.start_button = tk.Button(
+            self.mainframe, text="Start Game", command=self.typing_screen_grid_manager
+        )
+        self.set_title_screen()
+
+        self.text_label = tk.Label(self.mainframe, text="", font=("Helvetica", 24))
+        self.user_input = tk.StringVar()
+        self.user_input_entry = tk.Entry(
+            self.mainframe, textvariable=self.user_input, font=("Helvetica", 18)
+        )
+        self.user_input_entry.bind("<Return>", self.check_text)
+
+        self.new_text()
+
+    def load_texts(self, database_path: str) -> List[Tuple[str, str]]:
+        """
+        Load question and explanation texts from an SQLite database.
+
+        Parameters
+        ----------
+        database_path : str
+            Path to the SQLite database file.
+
+        Returns
+        -------
+        List[Tuple[str, str]]:
+            List of tuples containing question and explanation texts.
+        """
+        conn = sqlite3.connect(database_path)
+        c = conn.cursor()
+        c.execute("SELECT question, explanation FROM text_typing")
+        data = c.fetchall()
+        conn.close()
+        print(data)
+
+        return data
+
+    def set_title_screen(self):
+        self.mainframe.grid(row=0, column=0, sticky=(self.N, self.S, self.E, self.W))
+        self.resizable_mode()
+        self.title_label.pack(pady=50)
+        self.start_button.pack()
+
+    def unset_title_screen(self):
+        self.title_label.pack_forget()
+        self.start_button.pack_forget()
+
+    def typing_screen_grid_manager(self):
+        self.unset_title_screen()
+        self.text_label.pack(pady=20)
+        self.user_input_entry.pack(pady=10)
+        self.user_input_entry.focus_set()
+
+    def resizable_mode(self):
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
+        self.mainframe.columnconfigure(0, weight=1)
+        self.mainframe.columnconfigure(1, weight=1)
+        self.mainframe.columnconfigure(2, weight=1)
+        self.mainframe.columnconfigure(3, weight=1)
+        self.mainframe.rowconfigure(1, weight=1)
+
+    def new_text(self):
+        self.current_text = random.choice(self.texts)[0]
+        self.text_label.config(text=self.current_text, fg="black")
+
+    def check_text(self, event):
+        user_text = self.user_input.get()
+        if user_text == self.current_text:
+            self.text_label.config(text="Correct!", fg="green")
+        else:
+            self.text_label.config(text="Incorrect!", fg="red")
+        self.user_input.set("")
+        self.root.after(500, self.new_text)
 
 
 def main():
-    words = ['python', 'java', 'ruby', 'javascript', 'php', 'swift']
-    score = 0
+    root = tk.Tk()
+    database_path = Path("./typing_game.db")
+    _ = TypingGameApp(root, database_path)
+    root.mainloop()
 
-    while True:
-        word = random.choice(words)
-        print(f'文字列をタイプしてください：{word}')
-        start_time = time.time()
-        user_input = input().strip().lower()
-        end_time = time.time()
-        if user_input == 'q':
-            print('ゲームを終了します。')
-            break
-        elif user_input == word:
-            elapsed_time = end_time - start_time
-            score += len(word) / elapsed_time
-            print(f'正解です！ 今回の得点は {score:.2f} 点です。')
-        else:
-            print('不正解です。')
-
-        print("Hello, World!")
 
 if __name__ == "__main__":
     main()
