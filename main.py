@@ -100,7 +100,7 @@ class TypingGameApp:
 
 def main():
     root = tk.Tk()
-    database_path = Path("./typing_game.db")
+    database_path = Path("./assets/database/typing_game.db")
     _ = TypingGameApp(root, database_path)
     root.mainloop()
 
