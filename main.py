@@ -1,9 +1,11 @@
 import random
 import sqlite3
+import platform
 import tkinter as tk
 from pathlib import Path
 from tkinter import ttk
 from typing import List, Tuple
+import winsound
 
 
 class TypingGameApp:
@@ -14,9 +16,13 @@ class TypingGameApp:
         self.root = root
         self.root.title("Typing Game")
         self.mainframe = ttk.Frame(root, padding=(3, 3, 12, 12))
+        self.on_windows_os = (platform.system() == 'Windows')
+        self.sound_available = self.on_windows_os
+        if self.sound_available:
+            self.correct_sound = './assets/sound/pinpon2.wav'
+            self.incorrect_sound = './assets/sound/bubbu2.wav'
 
         self.texts = self.load_texts(self.database_path)
-        # self.texts = ["apple", "banana", "You bought a book.", "I have a pen."]
         self.current_text = ""
 
         self.title_label = tk.Label(
@@ -91,8 +97,12 @@ class TypingGameApp:
         user_text = self.user_input.get()
         if user_text == self.current_text:
             self.text_label.config(text="Correct!", fg="green")
+            if self.sound_available:
+                winsound.PlaySound(self.correct_sound, winsound.SND_FILENAME | winsound.SND_ASYNC)
         else:
             self.text_label.config(text="Incorrect!", fg="red")
+            if self.sound_available:
+                winsound.PlaySound(self.incorrect_sound, winsound.SND_FILENAME | winsound.SND_ASYNC)
         self.user_input.set("")
         self.root.after(500, self.new_text)
 
