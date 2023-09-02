@@ -55,7 +55,6 @@ class TypingGameApp:
         c.execute("SELECT question, explanation FROM text_typing")
         data = c.fetchall()
         conn.close()
-        print(data)
 
         return data
 
