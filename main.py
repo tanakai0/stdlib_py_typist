@@ -1,11 +1,11 @@
+import platform
 import random
 import sqlite3
-import platform
 import tkinter as tk
+import winsound
 from pathlib import Path
 from tkinter import ttk
 from typing import List, Tuple
-import winsound
 
 
 class TypingGameApp:
@@ -16,11 +16,12 @@ class TypingGameApp:
         self.root = root
         self.root.title("Typing Game")
         self.mainframe = ttk.Frame(root, padding=(3, 3, 12, 12))
-        self.on_windows_os = (platform.system() == 'Windows')
+        self.on_windows_os = platform.system() == "Windows"
         self.sound_available = self.on_windows_os
         if self.sound_available:
-            self.correct_sound = './assets/sound/pinpon2.wav'
-            self.incorrect_sound = './assets/sound/bubbu2.wav'
+            self.correct_sound = "./assets/sound/pinpon2.wav"
+            self.incorrect_sound = "./assets/sound/bubbu1.wav"
+            self.title_music = "./assets/sound/scene3.wav"
 
         self.texts = self.load_texts(self.database_path)
         self.current_text = ""
@@ -69,10 +70,17 @@ class TypingGameApp:
         self.resizable_mode()
         self.title_label.pack(pady=50)
         self.start_button.pack()
+        if self.sound_available:
+            winsound.PlaySound(
+                self.title_music,
+                winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP,
+            )
 
     def unset_title_screen(self):
         self.title_label.pack_forget()
         self.start_button.pack_forget()
+        if self.sound_available:
+            winsound.PlaySound(None, winsound.SND_PURGE)
 
     def typing_screen_grid_manager(self):
         self.unset_title_screen()
@@ -98,11 +106,15 @@ class TypingGameApp:
         if user_text == self.current_text:
             self.text_label.config(text="Correct!", fg="green")
             if self.sound_available:
-                winsound.PlaySound(self.correct_sound, winsound.SND_FILENAME | winsound.SND_ASYNC)
+                winsound.PlaySound(
+                    self.correct_sound, winsound.SND_FILENAME | winsound.SND_ASYNC
+                )
         else:
             self.text_label.config(text="Incorrect!", fg="red")
             if self.sound_available:
-                winsound.PlaySound(self.incorrect_sound, winsound.SND_FILENAME | winsound.SND_ASYNC)
+                winsound.PlaySound(
+                    self.incorrect_sound, winsound.SND_FILENAME | winsound.SND_ASYNC
+                )
         self.user_input.set("")
         self.root.after(500, self.new_text)
 
