@@ -1,7 +1,7 @@
 # stdlib_py_typist
 Typing Game Built with Python Standard Library.
 
-Ref.
+Source of Music Materials.
 
 scene3.wav
 ありふれた時間（ループ）
