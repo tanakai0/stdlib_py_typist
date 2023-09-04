@@ -10,6 +10,12 @@ from typing import List, Tuple
 
 class TypingGameApp:
     N, W, E, S = tk.N, tk.W, tk.E, tk.S
+    TYPING = "typing"
+    QUIZ = "quiz"
+    DOW = "DoW"
+    TIME_LIMIT = "time_limit"
+    FIXED_CHALLENGE = "fixed_challenge"
+    UNLIMITED_CHALLENGE = "unlimited_challenge"
 
     def __init__(self, root, database_path):
         self.database_path = database_path
@@ -33,15 +39,15 @@ class TypingGameApp:
         self.game_mode_label = tk.Label(
             self.mainframe, text="Game\n Mode", font=("Helvetica", 12)
         )
-        self.game_mode = tk.StringVar(None, "typing")
+        self.game_mode = tk.StringVar(None, self.TYPING)
         self.typing_radio_button = ttk.Radiobutton(
-            self.mainframe, text="Typing", variable=self.game_mode, value="typing"
+            self.mainframe, text="Typing", variable=self.game_mode, value=self.TYPING
         )
         self.quiz_radio_button = ttk.Radiobutton(
-            self.mainframe, text="Quiz", variable=self.game_mode, value="quiz"
+            self.mainframe, text="Quiz", variable=self.game_mode, value=self.QUIZ
         )
         self.DoW_radio_button = ttk.Radiobutton(
-            self.mainframe, text="DoW", variable=self.game_mode, value="DoW"
+            self.mainframe, text="DoW", variable=self.game_mode, value=self.DOW
         )
 
         self.challenge_mode_label = tk.Label(
@@ -52,23 +58,23 @@ class TypingGameApp:
             self.mainframe,
             text="Time Limit",
             variable=self.challenge_mode,
-            value="time_limit",
+            value=self.TIME_LIMIT,
         )
         self.fixed_challenge_radio_button = ttk.Radiobutton(
             self.mainframe,
             text="Fixed Challenge",
             variable=self.challenge_mode,
-            value="fixed_challenge",
+            value=self.FIXED_CHALLENGE,
         )
         self.unlimited_challenge_radio_button = ttk.Radiobutton(
             self.mainframe,
             text="Unlimited Challenge",
             variable=self.challenge_mode,
-            value="unlimited_challenge",
+            value=self.UNLIMITED_CHALLENGE,
         )
 
         self.start_button = tk.Button(
-            self.mainframe, text="Start Game", command=self.typing_screen_grid_manager
+            self.mainframe, text="Start Game", command=self.push_start_button
         )
 
         self.set_title_screen()
@@ -93,7 +99,7 @@ class TypingGameApp:
 
         Returns
         -------
-        List[Tuple[str, str]]:
+         _ : List[Tuple[str, str]]
             List of tuples containing question and explanation texts.
         """
         conn = sqlite3.connect(database_path)
@@ -138,7 +144,20 @@ class TypingGameApp:
         if self.sound_available:
             winsound.PlaySound(None, winsound.SND_PURGE)
 
-    def typing_screen_grid_manager(self):
+    def push_start_button(self):
+        challenge_mode = self.challenge_mode.get()
+        match challenge_mode:
+            case self.TIME_LIMIT:
+                self.set_unlimited_challenge_screen()  # temp
+            case self.FIXED_CHALLENGE:
+                self.set_unlimited_challenge_screen()  # temp
+            case self.UNLIMITED_CHALLENGE:
+                self.set_unlimited_challenge_screen()
+            case _:
+                raise ValueError(f"{challenge_mode} is invalid challenge mode.")  
+        
+
+    def set_unlimited_challenge_screen(self):
         self.unset_title_screen()
         self.text_label.pack(pady=20)
         self.user_input_entry.pack(pady=10)
