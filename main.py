@@ -29,9 +29,11 @@ class TypingGameApp:
         self.title_label = tk.Label(
             self.mainframe, text="Typing Game", font=("Helvetica", 36)
         )
+        
         self.start_button = tk.Button(
             self.mainframe, text="Start Game", command=self.typing_screen_grid_manager
         )
+
         self.set_title_screen()
 
         self.text_label = tk.Label(self.mainframe, text="", font=("Helvetica", 24))
@@ -64,6 +66,9 @@ class TypingGameApp:
         conn.close()
 
         return data
+    
+    def select_mode(mode):
+        start_game(mode)
 
     def set_title_screen(self):
         self.mainframe.grid(row=0, column=0, sticky=(self.N, self.S, self.E, self.W))
