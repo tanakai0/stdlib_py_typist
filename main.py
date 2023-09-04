@@ -29,7 +29,44 @@ class TypingGameApp:
         self.title_label = tk.Label(
             self.mainframe, text="Typing Game", font=("Helvetica", 36)
         )
-        
+
+        self.game_mode_label = tk.Label(
+            self.mainframe, text="Game\n Mode", font=("Helvetica", 12)
+        )
+        self.game_mode = tk.StringVar(None, "typing")
+        self.typing_radio_button = ttk.Radiobutton(
+            self.mainframe, text="Typing", variable=self.game_mode, value="typing"
+        )
+        self.quiz_radio_button = ttk.Radiobutton(
+            self.mainframe, text="Quiz", variable=self.game_mode, value="quiz"
+        )
+        self.DoW_radio_button = ttk.Radiobutton(
+            self.mainframe, text="DoW", variable=self.game_mode, value="DoW"
+        )
+
+        self.challenge_mode_label = tk.Label(
+            self.mainframe, text="Challenge\n Mode", font=("Helvetica", 12)
+        )
+        self.challenge_mode = tk.StringVar(None, "unlimited_challenge")
+        self.time_limit_radio_button = ttk.Radiobutton(
+            self.mainframe,
+            text="Time Limit",
+            variable=self.challenge_mode,
+            value="time_limit",
+        )
+        self.fixed_challenge_radio_button = ttk.Radiobutton(
+            self.mainframe,
+            text="Fixed Challenge",
+            variable=self.challenge_mode,
+            value="fixed_challenge",
+        )
+        self.unlimited_challenge_radio_button = ttk.Radiobutton(
+            self.mainframe,
+            text="Unlimited Challenge",
+            variable=self.challenge_mode,
+            value="unlimited_challenge",
+        )
+
         self.start_button = tk.Button(
             self.mainframe, text="Start Game", command=self.typing_screen_grid_manager
         )
@@ -66,24 +103,38 @@ class TypingGameApp:
         conn.close()
 
         return data
-    
-    def select_mode(mode):
-        start_game(mode)
 
     def set_title_screen(self):
         self.mainframe.grid(row=0, column=0, sticky=(self.N, self.S, self.E, self.W))
-        self.resizable_mode()
-        self.title_label.pack(pady=50)
-        self.start_button.pack()
+        # self.resizable_mode()
         if self.sound_available:
             winsound.PlaySound(
                 self.title_music,
                 winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP,
             )
+        self.title_label.grid(column=0, row=0, columnspan=4, pady=20)
+        self.game_mode_label.grid(column=0, row=1, rowspan=3, padx=5)
+        self.typing_radio_button.grid(column=1, row=2, sticky=self.W)
+        self.quiz_radio_button.grid(column=1, row=3, sticky=self.W)
+        self.DoW_radio_button.grid(column=1, row=4, sticky=self.W)
+        self.challenge_mode_label.grid(column=2, row=1, rowspan=3, padx=5)
+        self.time_limit_radio_button.grid(column=3, row=2, sticky=self.W)
+        self.fixed_challenge_radio_button.grid(column=3, row=3, sticky=self.W)
+        self.unlimited_challenge_radio_button.grid(column=3, row=4, sticky=self.W)
+        self.start_button.grid(column=0, row=5, columnspan=4, pady=5)
 
     def unset_title_screen(self):
-        self.title_label.pack_forget()
-        self.start_button.pack_forget()
+        self.title_label.grid_forget()
+        self.game_mode_label.grid_forget()
+        self.typing_radio_button.grid_forget()
+        self.quiz_radio_button.grid_forget()
+        self.DoW_radio_button.grid_forget()
+        self.challenge_mode_label.grid_forget()
+        self.time_limit_radio_button.grid_forget()
+        self.fixed_challenge_radio_button.grid_forget()
+        self.unlimited_challenge_radio_button.grid_forget()
+        self.start_button.grid_forget()
+
         if self.sound_available:
             winsound.PlaySound(None, winsound.SND_PURGE)
 
