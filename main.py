@@ -77,8 +77,6 @@ class TypingGameApp:
             self.mainframe, text="Start Game", command=self.push_start_button
         )
 
-        self.set_title_screen()
-
         self.text_label = tk.Label(self.mainframe, text="", font=("Helvetica", 24))
         self.user_input = tk.StringVar()
         self.user_input_entry = tk.Entry(
@@ -86,6 +84,7 @@ class TypingGameApp:
         )
         self.user_input_entry.bind("<Return>", self.check_text)
 
+        self.set_title_screen()
         self.new_text()
 
     def load_texts(self, database_path: str) -> List[Tuple[str, str]]:
