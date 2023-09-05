@@ -14,8 +14,8 @@ class TypingGameApp:
     QUIZ = "Quiz"
     DOW = "DoW"
     TIME_LIMIT = "Time Limit"
-    FIXED_CHALLENGE = "Fixed Challenge"
-    UNLIMITED_CHALLENGE = "Unlimited Challenge"
+    FIXED_QUIZ = "Fixed Quiz"
+    ENDLESS_QUIZ = "Endless Quiz"
 
     def __init__(self, root, database_path):
         self.database_path = database_path
@@ -53,24 +53,24 @@ class TypingGameApp:
         self.challenge_mode_label = tk.Label(
             self.mainframe, text="Challenge\n Mode", font=("Helvetica", 12)
         )
-        self.challenge_mode = tk.StringVar(None, self.UNLIMITED_CHALLENGE)
+        self.challenge_mode = tk.StringVar(None, self.ENDLESS_QUIZ)
         self.time_limit_radio_button = ttk.Radiobutton(
             self.mainframe,
             text=self.TIME_LIMIT,
             variable=self.challenge_mode,
             value=self.TIME_LIMIT,
         )
-        self.fixed_challenge_radio_button = ttk.Radiobutton(
+        self.FIXED_QUIZ_radio_button = ttk.Radiobutton(
             self.mainframe,
-            text=self.FIXED_CHALLENGE,
+            text=self.FIXED_QUIZ,
             variable=self.challenge_mode,
-            value=self.FIXED_CHALLENGE,
+            value=self.FIXED_QUIZ,
         )
-        self.unlimited_challenge_radio_button = ttk.Radiobutton(
+        self.ENDLESS_QUIZ_radio_button = ttk.Radiobutton(
             self.mainframe,
-            text=self.UNLIMITED_CHALLENGE,
+            text=self.ENDLESS_QUIZ,
             variable=self.challenge_mode,
-            value=self.UNLIMITED_CHALLENGE,
+            value=self.ENDLESS_QUIZ,
         )
 
         self.start_button = tk.Button(
@@ -124,8 +124,8 @@ class TypingGameApp:
         self.DoW_radio_button.grid(column=1, row=4, sticky=self.W)
         self.challenge_mode_label.grid(column=2, row=1, rowspan=3, padx=5)
         self.time_limit_radio_button.grid(column=3, row=2, sticky=self.W)
-        self.fixed_challenge_radio_button.grid(column=3, row=3, sticky=self.W)
-        self.unlimited_challenge_radio_button.grid(column=3, row=4, sticky=self.W)
+        self.FIXED_QUIZ_radio_button.grid(column=3, row=3, sticky=self.W)
+        self.ENDLESS_QUIZ_radio_button.grid(column=3, row=4, sticky=self.W)
         self.start_button.grid(column=0, row=5, columnspan=4, pady=5)
 
     def unset_title_screen(self):
@@ -136,8 +136,8 @@ class TypingGameApp:
         self.DoW_radio_button.grid_forget()
         self.challenge_mode_label.grid_forget()
         self.time_limit_radio_button.grid_forget()
-        self.fixed_challenge_radio_button.grid_forget()
-        self.unlimited_challenge_radio_button.grid_forget()
+        self.FIXED_QUIZ_radio_button.grid_forget()
+        self.ENDLESS_QUIZ_radio_button.grid_forget()
         self.start_button.grid_forget()
 
         if self.sound_available:
@@ -147,15 +147,15 @@ class TypingGameApp:
         challenge_mode = self.challenge_mode.get()
         match challenge_mode:
             case self.TIME_LIMIT:
-                self.set_unlimited_challenge_screen()  # temp
-            case self.FIXED_CHALLENGE:
-                self.set_unlimited_challenge_screen()  # temp
-            case self.UNLIMITED_CHALLENGE:
-                self.set_unlimited_challenge_screen()
+                self.set_ENDLESS_QUIZ_screen()  # temp
+            case self.FIXED_QUIZ:
+                self.set_ENDLESS_QUIZ_screen()  # temp
+            case self.ENDLESS_QUIZ:
+                self.set_ENDLESS_QUIZ_screen()
             case _:
                 raise ValueError(f"{challenge_mode} is invalid challenge mode.")
 
-    def set_unlimited_challenge_screen(self):
+    def set_ENDLESS_QUIZ_screen(self):
         self.unset_title_screen()
         self.text_label.pack(pady=20)
         self.user_input_entry.pack(pady=10)
