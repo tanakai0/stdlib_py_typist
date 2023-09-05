@@ -5,6 +5,14 @@ from typing import List, Tuple, Union
 
 
 class Quiz:
+    """
+    Notes
+    -----
+    Be careful that tab character in answer is treated as special meaning.
+    Multiple answer is implemented as tab connected strings.
+    For example, if answer = 'cat\tdog\t', cat, dog and empty string ('') are answers.
+    """
+
     def __init__(self, question: str, answer: str, explanation: str) -> None:
         self.question = question
         self.answer = answer
@@ -22,21 +30,9 @@ class Quizzes:
 
     def __init__(self, name: str, description: str) -> None:
         self.name = name
-        self.description = self.description
+        self.description = description
 
-    def quiz_generator():
-        pass
-
-
-class DynamicQuizzes(Quizzes):
-    """
-    Set of quiz generated dynamically.
-    """
-
-    def __init__(self, name: str, description: str) -> None:
-        super().__init__(name, description)
-
-    def quiz_generator():
+    def generate_quiz():
         pass
 
 
@@ -48,29 +44,40 @@ class StaticQuizzes(Quizzes):
     def __init__(self, database_path: Union[str, Path]) -> None:
         name, description = self.load_overview(database_path)
         super().__init__(name, description)
-        self.quizzes = self.load_quizzes()
+        self.quizzes = self.load_quizzes(database_path)
 
     @staticmethod
     def load_overview(database_path: Union[str, Path]) -> Tuple[str, str]:
-        conn = sqlite3.connect(database_path)
-        c = conn.cursor()
-        c.execute("SELECT name, description FROM overview")
-        row = c.fetchone()
-        if row is not None:
-            name, description = row
-        else:
-            raise ValueError("No overview")
-        conn.close()
+        with sqlite3.connect(database_path) as conn:
+            c = conn.cursor()
+            c.execute("SELECT name, description FROM overview")
+            row = c.fetchone()
+            if row is not None:
+                name, description = row
+            else:
+                raise ValueError("No overview")
         return name, description
 
     @staticmethod
     def load_quizzes(database_path: Union[str, Path]) -> List[Quiz]:
-        conn = sqlite3.connect(database_path)
-        c = conn.cursor()
-        c.execute("SELECT question, answer, explanation FROM quizzes")
-        data = c.fetchall()
-        conn.close()
-        return data
+        with sqlite3.connect(database_path) as conn:
+            c = conn.cursor()
+            c.execute("SELECT question, answer, explanation FROM quizzes")
+            data = c.fetchall()
+        quizzes = [Quiz(q, a, e) for (q, a, e) in data]
+        return quizzes
 
-    def quiz_generator(self) -> Quiz:
+    def generate_quiz(self) -> Quiz:
         return random.choice(self.quizzes)
+
+
+class DynamicQuizzes(Quizzes):
+    """
+    Set of quiz generated dynamically.
+    """
+
+    def __init__(self, name: str, description: str) -> None:
+        super().__init__(name, description)
+
+    def generate_quiz():
+        pass

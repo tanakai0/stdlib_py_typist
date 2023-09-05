@@ -1,10 +1,9 @@
 import platform
-import random
-import sqlite3
 import tkinter as tk
 import winsound
 from tkinter import ttk
-from typing import List, Tuple
+
+from src.quiz import StaticQuizzes
 
 
 class TypingGameApp:
@@ -21,13 +20,13 @@ class TypingGameApp:
         self.on_windows_os = platform.system() == "Windows"
         self.sound_available = self.on_windows_os
         self.widgets = []
+        self.quizzes = StaticQuizzes(database_path)
         if self.sound_available:
             self.correct_sound = "./assets/sound/pinpon2.wav"
             self.incorrect_sound = "./assets/sound/bubbu1.wav"
             self.title_music = "./assets/sound/scene3.wav"
 
-        self.texts = self.load_texts(self.database_path)
-        self.current_text = ""
+        self.question = ""
 
         self.title_label = tk.Label(
             self.mainframe, text="Typing Game", font=("Helvetica", 36)
@@ -69,28 +68,6 @@ class TypingGameApp:
 
         self.set_title_screen()
         self.new_text()
-
-    def load_texts(self, database_path: str) -> List[Tuple[str, str]]:
-        """
-        Load question and explanation texts from an SQLite database.
-
-        Parameters
-        ----------
-        database_path : str
-            Path to the SQLite database file.
-
-        Returns
-        -------
-         _ : List[Tuple[str, str]]
-            List of tuples containing question and explanation texts.
-        """
-        conn = sqlite3.connect(database_path)
-        c = conn.cursor()
-        c.execute("SELECT question, explanation FROM text_typing")
-        data = c.fetchall()
-        conn.close()
-
-        return data
 
     def set_title_screen(self) -> None:
         self.mainframe.grid(row=0, column=0, sticky=(self.N, self.S, self.E, self.W))
@@ -140,12 +117,13 @@ class TypingGameApp:
         self.mainframe.rowconfigure(1, weight=1)
 
     def new_text(self) -> None:
-        self.current_text = random.choice(self.texts)[0]
-        self.text_label.config(text=self.current_text, fg="black")
+        self.quiz = self.quizzes.generate_quiz()
+        self.question = self.quiz.question
+        self.text_label.config(text=self.question, fg="black")
 
     def check_text(self, event) -> None:
-        user_text = self.user_input.get()
-        if user_text == self.current_text:
+        player_answer = self.user_input.get()
+        if self.quiz.check_answer(player_answer):
             self.text_label.config(text="Correct!", fg="green")
             if self.sound_available:
                 winsound.PlaySound(
