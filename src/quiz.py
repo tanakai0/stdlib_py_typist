@@ -69,15 +69,3 @@ class StaticQuizzes(Quizzes):
 
     def generate_quiz(self) -> Quiz:
         return random.choice(self.quizzes)
-
-
-class DynamicQuizzes(Quizzes):
-    """
-    Set of quiz generated dynamically.
-    """
-
-    def __init__(self, name: str, description: str) -> None:
-        super().__init__(name, description)
-
-    def generate_quiz():
-        pass

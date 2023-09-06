@@ -1,10 +1,12 @@
+import datetime
+import inspect
 import platform
 import textwrap
 import tkinter as tk
 import winsound
-import datetime
 from tkinter import ttk
 
+from src import dynamic_quizzes
 from src.quiz import StaticQuizzes
 from src.quiz_database import DATABASE_FOLDER, QUIZ_LOG_FILE, QuizLogger
 
@@ -32,6 +34,12 @@ class TypingGameApp:
 
         db_paths = [p for p in DATABASE_FOLDER.glob("*.db") if p != QUIZ_LOG_FILE]
         self.quizzes_list = [StaticQuizzes(p) for p in db_paths]
+        # add instances of class defined in the ./src/dynamic_quizzes.py
+        self.quizzes_list += [
+            cls()
+            for name, cls in inspect.getmembers(dynamic_quizzes, inspect.isclass)
+            if cls.__module__ == dynamic_quizzes.__name__
+        ]
         self.overview2index = {(q.name, q.description): q for q in self.quizzes_list}
 
         self.root = root
@@ -55,9 +63,11 @@ class TypingGameApp:
         name = "名前"
         description = "説明"
         column = (name, description)
-        # style = ttk.Style()
-        # style.configure("Treeview", rowheight=40)
-        self.quizzes_table = ttk.Treeview(self.mainframe, columns=column, height=5, selectmode="browse")
+        style = ttk.Style()
+        style.configure("Treeview", rowheight=40)
+        self.quizzes_table = ttk.Treeview(
+            self.mainframe, columns=column, height=5, selectmode="browse"
+        )
         self.quizzes_table.bind("<<TreeviewSelect>>", self.select_quizzes)
         self.quizzes_table.column("#0", width=0, stretch="no")
         self.quizzes_table.column(name, anchor="w", width=200)
@@ -67,8 +77,10 @@ class TypingGameApp:
         self.quizzes_table.heading(description, text=description, anchor="center")
         for i, (n, d) in enumerate(self.overview2index.keys()):
             wrapped_n = "\n".join(textwrap.wrap(n, width=20))
-            wrapped_d = "\n".join(textwrap.wrap(d, width=20))
-            self.quizzes_table.insert(parent="", index="end", iid = i, values=(wrapped_n, wrapped_d))
+            wrapped_d = "\n".join(textwrap.wrap(d, width=30))
+            self.quizzes_table.insert(
+                parent="", index="end", iid=i, values=(wrapped_n, wrapped_d)
+            )
         if db_paths:
             self.quizzes_table.selection_set(0)
             self.quizzes_table.focus(0)
@@ -122,7 +134,7 @@ class TypingGameApp:
         )
         self.fixed_quiz_radio_button = ttk.Radiobutton(
             self.mainframe,
-            text= f"固定問題数（{self.min_num_limit}問-{self.max_num_limit}問）",
+            text=f"固定問題数（{self.min_num_limit}問-{self.max_num_limit}問）",
             variable=self.quiz_mode,
             value=self.FIXED_QUIZ,
         )
@@ -149,11 +161,13 @@ class TypingGameApp:
         question = "問題文"
         answer = "正答"
         explanation = "説明"
-        
+
         column = (_id, date, player_result, question, answer, explanation)
         # style = ttk.Style()
         # style.configure("Treeview", rowheight=40)
-        self.quiz_logs = ttk.Treeview(self.mainframe, columns=column, height=5, selectmode="browse")
+        self.quiz_logs = ttk.Treeview(
+            self.mainframe, columns=column, height=5, selectmode="browse"
+        )
         self.quiz_logs.column("#0", width=0, stretch="no")
         self.quiz_logs.column(_id, anchor="w", width=100)
         self.quiz_logs.column(date, anchor="w", width=200)
@@ -193,7 +207,11 @@ class TypingGameApp:
         self.title_label.grid(column=0, row=0, columnspan=5, pady=20)
         self.title_start_button.grid(column=0, row=5, columnspan=4, pady=5)
         self.show_quiz_logs_button.grid(column=4, row=5, pady=5)
-        self.widgets += [self.title_label, self.title_start_button, self.show_quiz_logs_button]
+        self.widgets += [
+            self.title_label,
+            self.title_start_button,
+            self.show_quiz_logs_button,
+        ]
 
     def unset_screen(self) -> None:
         for widget in self.widgets:
@@ -251,11 +269,11 @@ class TypingGameApp:
 
     def select_quizzes(self, event):
         selected_id = self.quizzes_table.selection()
-        if not(selected_id):
+        if not (selected_id):
             return
-        _id = selected_id[0]
-        overview = self.quizzes_table.item(_id, "values")
-        self.quizzes = self.overview2index[overview]
+        _id = int(selected_id[0])
+        self.quizzes = self.quizzes_list[_id]
+        print(self.quizzes.name)
 
     def setup_endless_quiz_screen(self) -> None:
         self.unset_screen()
@@ -267,14 +285,16 @@ class TypingGameApp:
         self.elapsed_minutes_label.grid(column=1, row=1)
         self.show_result_button.grid(column=1, row=2)
         self.player_input_entry.focus_set()
-        self.accuracy_rate_label.config(text=f"正答率: {self.correct} [問] {self.answered_num} [問]")
+        self.accuracy_rate_label.config(
+            text=f"正答率: {self.correct} [問] {self.answered_num} [問]"
+        )
         self.elapsed_minutes_label.config(text=f"経過時間: 0 [分]")
         self.widgets += [
             self.text_label,
             self.player_input_entry,
             self.accuracy_rate_label,
             self.elapsed_minutes_label,
-            self.show_result_button
+            self.show_result_button,
         ]
 
     def setup_endless_quiz_results(self) -> None:
@@ -284,10 +304,7 @@ class TypingGameApp:
         self.unset_screen()
         self.quiz_logs.grid(column=0, row=0)
         self.return_to_title_button.grid(column=0, row=1)
-        self.widgets += [
-            self.quiz_logs,
-            self.return_to_title_button
-        ]
+        self.widgets += [self.quiz_logs, self.return_to_title_button]
 
     def resizable_mode(self) -> None:
         self.root.columnconfigure(0, weight=1)
@@ -322,10 +339,18 @@ class TypingGameApp:
                     self.incorrect_sound, winsound.SND_FILENAME | winsound.SND_ASYNC
                 )
         self.player_input.set("")
-        self.accuracy_rate_label.config(text=f"正答率: {self.correct} [問] / {self.answered_num} [問]")
+        self.accuracy_rate_label.config(
+            text=f"正答率: {self.correct} [問] / {self.answered_num} [問]"
+        )
 
         date = datetime.datetime.now().isoformat()
-        self.logger.save_log(date, is_correct, self.quiz.question, self.quiz.answer, self.quiz.explanation)
+        self.logger.save_log(
+            date,
+            is_correct,
+            self.quiz.question,
+            self.quiz.answer,
+            self.quiz.explanation,
+        )
         self.is_saved = True
 
         self.root.after(500, self.new_quiz)
@@ -337,17 +362,19 @@ class TypingGameApp:
             if isinstance(num, float):
                 num = int(num)
             if num < min_limit:
-                return min_limit 
+                return min_limit
             elif max_limit < num:
                 return max_limit
             else:
                 return num
         except ValueError:
             return default
-        
+
     def on_closing(self):
         if not self.is_saved:
             date = datetime.datetime.now().isoformat()
-            self.logger.save_log(date, None, self.quiz.question, self.quiz.answer, self.quiz.explanation)
+            self.logger.save_log(
+                date, None, self.quiz.question, self.quiz.answer, self.quiz.explanation
+            )
         self.logger.close_log_connection()
         self.root.destroy()
