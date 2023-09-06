@@ -1,8 +1,9 @@
 import sqlite3
 from pathlib import Path
+import datetime
 
 DATABASE_FOLDER = Path("./assets/database").resolve()
-
+QUIZ_LOG_FILE = DATABASE_FOLDER / Path("./.quiz_log.db")
 
 def create_database(quiz_template):
     path = DATABASE_FOLDER / quiz_template.database_name
@@ -157,11 +158,80 @@ class TestKencho:
         ("沖縄県", "那覇市\t那覇\tなはし\tなは", ""),
     ]
 
+class QuizLogger:
+    """
+    Example
+    -------
+    logger = QuizLogger()
+
+    # save log example
+    date = datetime.datetime.now().isoformat()
+    player_result = None
+    question = "What's the capital of France?"
+    answer = "Paris"
+    explanation = "Paris is the capital of France."
+    logger.save_log(date, player_result, question, answer, explanation)
+
+    # Load log
+    logs = logger.load_log()
+    for log in logs:
+        print(log)
+    """
+    def __init__(self, db_path= QUIZ_LOG_FILE):
+        self.db_path = db_path
+        self.log_connection = sqlite3.connect(self.db_path)
+        self._init_db()
+
+    def _init_db(self):
+        with self.log_connection:
+            self.log_connection.execute("""
+                CREATE TABLE IF NOT EXISTS quiz_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT,
+                    player_result BOOLEAN,
+                    question TEXT,
+                    answer TEXT,
+                    explanation TEXT
+                );
+            """)
+
+    def save_log(self, date, player_result, question, answer, explanation):
+        with self.log_connection:
+            self.log_connection.execute("""
+                INSERT INTO quiz_log (date, player_result, question, answer, explanation)
+                VALUES (?, ?, ?, ?, ?);
+            """, (date, player_result, question, answer, explanation))
+
+            # Keep only the most recent 10000 logs
+            self.log_connection.execute("""
+                DELETE FROM quiz_log WHERE id NOT IN (
+                    SELECT id FROM quiz_log
+                    ORDER BY date DESC
+                    LIMIT 10000
+                );
+            """)
+
+    def load_log(self):
+        with self.log_connection:
+            cursor = self.log_connection.execute("""
+                SELECT * FROM quiz_log
+                ORDER BY date DESC;
+            """)
+            return cursor.fetchall()
+        
+    def close_log_connection(self):
+        if self.log_connection:
+            self.log_connection.close()
+
 
 def main():
     create_database(TestTyping)
     create_database(TestKanji)
     create_database(TestKencho)
+    
+    logs = QuizLogger().load_log()
+    for log in logs:
+        print(log)
 
 
 if __name__ == "__main__":
