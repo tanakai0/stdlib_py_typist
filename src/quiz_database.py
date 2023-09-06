@@ -159,6 +159,26 @@ class TestKencho:
     ]
 
 
+class FizzBuzz:
+    database_name = "fizz_buzz.db"
+    name = "プログラム言語名を当てよう"
+    description = "FizzBuzz のプログラムを見て、言語を当てる問題"
+    quizzes = [
+    ("for i in range(1, 101):\n    if i % 3 == 0 and i % 5 == 0:\n        print('FizzBuzz')\n    elif i % 3 == 0:\n        print('Fizz')\n    elif i % 5 == 0:\n        print('Buzz')\n    else:\n        print(i)", "Python", "Pythonではインデントが大事。"),
+    ("#include <stdio.h>\nint main() {\n    for(int i = 1; i <= 100; i++) {\n        if(i % 15 == 0) printf('FizzBuzz');\n        else if(i % 3 == 0) printf('Fizz');\n        else if(i % 5 == 0) printf('Buzz');\n        else printf('%d', i);\n        printf('\\n');\n    }\n    return 0;\n}", "C", "Cではprintfといった標準ライブラリの関数が多く使われる。"),
+    ("public class Main {\n    public static void main(String[] args) {\n        for(int i = 1; i <= 100; i++) {\n            if(i % 15 == 0) System.out.println('FizzBuzz');\n            else if(i % 3 == 0) System.out.println('Fizz');\n            else if(i % 5 == 0) System.out.println('Buzz');\n            else System.out.println(i);\n        }\n    }\n}", "Java", "JavaではSystem.out.printlnを使って出力する。"),
+    ("for i in 1..100\n  if i % 15 == 0\n    puts 'FizzBuzz'\n  elsif i % 3 == 0\n    puts 'Fizz'\n  elsif i % 5 == 0\n    puts 'Buzz'\n  else\n    puts i\n  end\nend", "Ruby", "Rubyではendでブロックを閉じる。"),
+    ("for (i in 1:100) {\n  if (i %% 15 == 0) cat('FizzBuzz\\n')\n  else if (i %% 3 == 0) cat('Fizz\\n')\n  else if (i %% 5 == 0) cat('Buzz\\n')\n  else cat(i, '\\n')\n}", "R", "Rでは%%で余りを求める。"),
+    ("for i := 1; i <= 100; i++ {\n    if i % 15 == 0 {\n        fmt.Println('FizzBuzz')\n    } else if i % 3 == 0 {\n        fmt.Println('Fizz')\n    } else if i % 5 == 0 {\n        fmt.Println('Buzz')\n    } else {\n        fmt.Println(i)\n    }\n}", "Go", "Goではfmt.Printlnで出力する。"),
+    ("for i in 1..100 do\n  case do\n    i rem 15 == 0 ->\n      IO.puts 'FizzBuzz'\n    i rem 3 == 0 ->\n      IO.puts 'Fizz'\n    i rem 5 == 0 ->\n      IO.puts 'Buzz'\n    true ->\n      IO.puts Integer.to_string(i)\n  end\nend", "Elixir", "ElixirではIO.putsで出力する。"),
+    ("BEGIN {for (i=1; i<=100; i++) if (i % 15 == 0) print 'FizzBuzz'; else if (i % 3 == 0) print 'Fizz'; else if (i % 5 == 0) print 'Buzz'; else print i}", "Awk", "AwkではBEGINブロックでスクリプトが始まる。"),
+    ("(dotimes [i 100]\n  (println (cond\n            (zero? (mod (+ i 1) 15)) 'FizzBuzz'\n            (zero? (mod (+ i 1) 3)) 'Fizz'\n            (zero? (mod (+ i 1) 5)) 'Buzz'\n            :else (+ i 1))))", "Clojure", "Clojureでは条件分岐にcondを使用する。"),
+    ("for i = 1, 100 do\n  if i % 15 == 0 then\n    print('FizzBuzz')\n  elseif i % 3 == 0 then\n    print('Fizz')\n  elseif i % 5 == 0 then\n    print('Buzz')\n  else\n    print(i)\n  end\nend", "Lua", "Luaではelseifで複数の条件を書く。")
+    ]
+
+
+
+
 class QuizLogger:
     """
     Example
@@ -239,6 +259,7 @@ def main():
     create_database(TestTyping)
     create_database(TestKanji)
     create_database(TestKencho)
+    create_database(FizzBuzz)
 
     logs = QuizLogger().load_log()
     for log in logs:
