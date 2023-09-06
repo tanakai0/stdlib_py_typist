@@ -141,20 +141,48 @@ class TypingGameApp:
 
         # widgets in the quiz screen
         self.text_label = tk.Label(self.mainframe, text="", font=("Helvetica", 24))
-        self.player_input = tk.StringVar()
-        self.player_input_entry = tk.Entry(
-            self.mainframe, textvariable=self.player_input, font=("Helvetica", 18)
+        self.player_answer = tk.StringVar()
+        self.player_answer_entry = tk.Entry(
+            self.mainframe, textvariable=self.player_answer, font=("Helvetica", 18)
         )
-        self.player_input_entry.bind("<Return>", self.check_text)
+        self.player_answer_entry.bind("<Return>", self.set_feedback_screen)
 
-        # widgets in the endless quiz screen
+        # for endless quiz mode
         self.accuracy_rate_label = tk.Label(self.mainframe, text="")
         self.elapsed_minutes_label = tk.Label(self.mainframe, text="")
         self.show_result_button = tk.Button(
-            self.mainframe, text="終了", command=self.setup_endless_quiz_results
+            self.mainframe, text="終了", command=self.setup_results_screen
+        )
+
+        # widgets in the feedback screen
+
+        # for endless quiz mode
+        self.question_title_label = tk.Label(self.mainframe, text="問題：")
+        self.answer_title_label = tk.Label(self.mainframe, text="正答：")
+        self.explanation_title_label = tk.Label(self.mainframe, text="解説：")
+        self.question_label = tk.Label(self.mainframe, text="")
+        self.answer_label = tk.Label(self.mainframe, text="")
+        self.explanation_label = tk.Label(self.mainframe, text="")
+        self.next_quiz_button = tk.Button(
+            self.mainframe, text="次へ (Enter)", command=self.update_quiz_screen
+        )
+        self.next_quiz_button.bind("<Return>", self.update_quiz_screen)
+
+        # widgets in the results screen
+        self.retry_button = tk.Button(
+            self.mainframe, text="再挑戦", command=self.push_quiz_start_button
+        )
+        self.return_to_mode_selection_button = tk.Button(
+            self.mainframe, text="モード選択に戻る", command=self.setup_mode_selection_screen
         )
 
         # widgets in the quiz log screen
+        self.quiz_logs = self.generate_quiz_logs_table()
+
+        # initial screen
+        self.setup_title_screen()
+
+    def generate_quiz_logs_table(self, num_limit=None) -> None:
         _id = "履歴番号"
         date = "日付"
         player_result = "正誤"
@@ -163,26 +191,29 @@ class TypingGameApp:
         explanation = "説明"
 
         column = (_id, date, player_result, question, answer, explanation)
-        # style = ttk.Style()
-        # style.configure("Treeview", rowheight=40)
-        self.quiz_logs = ttk.Treeview(
+        style = ttk.Style()
+        style.configure("Treeview", rowheight=40)
+        quiz_logs_table = ttk.Treeview(
             self.mainframe, columns=column, height=5, selectmode="browse"
         )
-        self.quiz_logs.column("#0", width=0, stretch="no")
-        self.quiz_logs.column(_id, anchor="w", width=100)
-        self.quiz_logs.column(date, anchor="w", width=200)
-        self.quiz_logs.column(player_result, anchor="w", width=50)
-        self.quiz_logs.column(question, anchor="w", width=300)
-        self.quiz_logs.column(answer, anchor="w", width=300)
-        self.quiz_logs.column(explanation, anchor="w", width=300)
-        self.quiz_logs.heading("#0", text="")
-        self.quiz_logs.heading(_id, text=_id, anchor="center")
-        self.quiz_logs.heading(date, text=date, anchor="center")
-        self.quiz_logs.heading(player_result, text=player_result, anchor="center")
-        self.quiz_logs.heading(question, text=question, anchor="center")
-        self.quiz_logs.heading(answer, text=answer, anchor="center")
-        self.quiz_logs.heading(explanation, text=explanation, anchor="center")
-        for i, log in enumerate(self.logger.load_log()):
+        quiz_logs_table.column("#0", width=0, stretch="no")
+        quiz_logs_table.column(_id, anchor="w", width=100)
+        quiz_logs_table.column(date, anchor="w", width=200)
+        quiz_logs_table.column(player_result, anchor="w", width=50)
+        quiz_logs_table.column(question, anchor="w", width=300)
+        quiz_logs_table.column(answer, anchor="w", width=300)
+        quiz_logs_table.column(explanation, anchor="w", width=300)
+        quiz_logs_table.heading("#0", text="")
+        quiz_logs_table.heading(_id, text=_id, anchor="center")
+        quiz_logs_table.heading(date, text=date, anchor="center")
+        quiz_logs_table.heading(player_result, text=player_result, anchor="center")
+        quiz_logs_table.heading(question, text=question, anchor="center")
+        quiz_logs_table.heading(answer, text=answer, anchor="center")
+        quiz_logs_table.heading(explanation, text=explanation, anchor="center")
+        logs = self.logger.load_log()
+        if num_limit is not None:
+            logs = logs[:num_limit]
+        for i, log in enumerate(logs):
             player_result = ""
             if log[2] is None:
                 player_result = "None"
@@ -191,9 +222,8 @@ class TypingGameApp:
             else:
                 player_result = "X"
             values = (i, log[1], player_result, log[3], log[4], log[5])
-            self.quiz_logs.insert(parent="", index="end", values=values)
-
-        self.setup_title_screen()
+            quiz_logs_table.insert(parent="", index="end", values=values)
+        return quiz_logs_table
 
     def setup_title_screen(self) -> None:
         self.unset_screen()
@@ -222,7 +252,6 @@ class TypingGameApp:
             winsound.PlaySound(None, winsound.SND_PURGE)
 
     def push_quiz_start_button(self) -> None:
-        self.new_quiz()
         quiz_mode = self.quiz_mode.get()
         # print(
         #     self.str2positive_int(
@@ -236,11 +265,11 @@ class TypingGameApp:
         # )
         match quiz_mode:
             case self.ENDLESS_QUIZ:
-                self.setup_endless_quiz_screen()
+                self.setup_quiz_screen()
             case self.TIME_LIMIT:
-                self.setup_endless_quiz_screen()  # temp
+                self.setup_quiz_screen()  # temp
             case self.FIXED_QUIZ:
-                self.setup_endless_quiz_screen()  # temp
+                self.setup_quiz_screen()  # temp
             case _:
                 raise ValueError(f"{quiz_mode} is invalid quiz mode.")
 
@@ -274,30 +303,103 @@ class TypingGameApp:
         _id = int(selected_id[0])
         self.quizzes = self.quizzes_list[_id]
 
-    def setup_endless_quiz_screen(self) -> None:
-        self.unset_screen()
+    def setup_quiz_screen(self) -> None:
         self.correct = 0
         self.answered_num = 0
-        self.text_label.grid(column=0, row=0, rowspan=2)
-        self.player_input_entry.grid(column=0, row=2)
-        self.accuracy_rate_label.grid(column=1, row=0)
-        self.elapsed_minutes_label.grid(column=1, row=1)
-        self.show_result_button.grid(column=1, row=2)
-        self.player_input_entry.focus_set()
-        self.accuracy_rate_label.config(
-            text=f"正答率: {self.correct} [問] {self.answered_num} [問]"
-        )
-        self.elapsed_minutes_label.config(text=f"経過時間: 0 [分]")
-        self.widgets += [
-            self.text_label,
-            self.player_input_entry,
-            self.accuracy_rate_label,
-            self.elapsed_minutes_label,
-            self.show_result_button,
-        ]
-
-    def setup_endless_quiz_results(self) -> None:
         self.unset_screen()
+        self.player_answer.set("")
+        quiz_mode = self.quiz_mode.get()
+        self.new_quiz()
+        match quiz_mode:
+            case self.ENDLESS_QUIZ:
+                self.text_label.grid(column=0, row=0, rowspan=2, columnspan=2)
+                self.player_answer_entry.grid(column=0, row=2, columnspan=2)
+                self.accuracy_rate_label.grid(column=2, row=0)
+                self.elapsed_minutes_label.grid(column=2, row=1)
+                self.show_result_button.grid(column=2, row=2)
+                self.player_answer_entry.focus_set()
+                self.accuracy_rate_label.config(
+                    text=f"正答率： {self.correct} 問 {self.answered_num} 問"
+                )
+                self.elapsed_minutes_label.config(text=f"経過時間: 0 分")
+                self.widgets += [
+                    self.text_label,
+                    self.player_answer_entry,
+                    self.accuracy_rate_label,
+                    self.elapsed_minutes_label,
+                    self.show_result_button,
+                ]
+            case self.TIME_LIMIT:
+                pass
+            case self.FIXED_QUIZ:
+                pass
+            case _:
+                raise ValueError(f"{quiz_mode} is invalid quiz mode.")
+
+    def update_quiz_screen(self, event=None) -> None:
+        self.player_answer.set("")
+        self.player_answer_entry.focus_set()
+        self.new_quiz()
+        quiz_mode = self.quiz_mode.get()
+        match quiz_mode:
+            case self.ENDLESS_QUIZ:
+                # delete last 7 widgets
+                for w in self.widgets[-7:]:
+                    w.grid_forget()
+                self.widgets = self.widgets[:-7]
+            case self.TIME_LIMIT:
+                pass
+            case self.FIXED_QUIZ:
+                pass
+            case _:
+                raise ValueError(f"{quiz_mode} is invalid quiz mode.")
+
+    def new_quiz(self) -> None:
+        self.quiz = self.quizzes.generate_quiz()
+        self.question = self.quiz.question
+        self.text_label.config(text=self.question, fg="black")
+        self.answered_num += 1
+        self.is_saved = False
+
+    def setup_results_screen(self) -> None:
+        if not self.is_saved:
+            date = datetime.datetime.now().isoformat()
+            self.logger.save_log(
+                date, None, self.quiz.question, self.quiz.answer, self.quiz.explanation
+            )
+        self.is_saved = True
+        self.unset_screen()
+        quiz_mode = self.quiz_mode.get()
+        match quiz_mode:
+            case self.ENDLESS_QUIZ:
+                result_logs = self.generate_quiz_logs_table(self.answered_num)
+                self.accuracy_rate_label.config(
+                    text=f"正答率： {self.correct} 問 / {self.answered_num} 問",
+                    font=("Helvetica", 12),
+                )
+                self.accuracy_rate_label.grid(
+                    row=0, column=0, columnspan=2, sticky=self.W
+                )
+                self.elapsed_minutes_label.grid(
+                    row=1, column=0, columnspan=2, sticky=self.W, pady=10
+                )
+                result_logs.grid(row=2, column=0, columnspan=2)
+                self.retry_button.grid(row=3, column=0)
+                self.return_to_mode_selection_button.grid(row=3, column=1)
+                self.widgets += [
+                    self.accuracy_rate_label,
+                    self.accuracy_rate_label,
+                    self.elapsed_minutes_label,
+                    result_logs,
+                    self.retry_button,
+                    self.return_to_mode_selection_button,
+                ]
+            case self.TIME_LIMIT:
+                pass
+            case self.FIXED_QUIZ:
+                pass
+            case _:
+                raise ValueError(f"{quiz_mode} is invalid quiz mode.")
 
     def setup_quiz_logs_screen(self) -> None:
         self.unset_screen()
@@ -314,45 +416,69 @@ class TypingGameApp:
         self.mainframe.columnconfigure(3, weight=1)
         self.mainframe.rowconfigure(1, weight=1)
 
-    def new_quiz(self) -> None:
-        self.quiz = self.quizzes.generate_quiz()
-        self.question = self.quiz.question
-        self.text_label.config(text=self.question, fg="black")
-        self.is_saved = False
-
-    def check_text(self, event) -> None:
-        self.answered_num += 1
-        player_answer = self.player_input.get()
+    def set_feedback_screen(self, event) -> None:
+        quiz_mode = self.quiz_mode.get()
+        player_answer = self.player_answer.get()
         is_correct = self.quiz.check_answer(player_answer)
-        if is_correct:
-            self.correct += 1
-            self.text_label.config(text="正解！", fg="green")
-            if self.sound_available:
-                winsound.PlaySound(
-                    self.correct_sound, winsound.SND_FILENAME | winsound.SND_ASYNC
+        match quiz_mode:
+            case self.ENDLESS_QUIZ:
+                if is_correct:
+                    self.correct += 1
+                    self.text_label.config(text="正解！", fg="green")
+                    if self.sound_available:
+                        winsound.PlaySound(
+                            self.correct_sound,
+                            winsound.SND_FILENAME | winsound.SND_ASYNC,
+                        )
+                else:
+                    self.text_label.config(text="不正解！", fg="red")
+                    if self.sound_available:
+                        winsound.PlaySound(
+                            self.incorrect_sound,
+                            winsound.SND_FILENAME | winsound.SND_ASYNC,
+                        )
+                self.accuracy_rate_label.config(
+                    text=f"正答率： {self.correct} 問 / {self.answered_num} 問"
                 )
-        else:
-            self.text_label.config(text="不正解！", fg="red")
-            if self.sound_available:
-                winsound.PlaySound(
-                    self.incorrect_sound, winsound.SND_FILENAME | winsound.SND_ASYNC
+
+                self.question_title_label.grid(column=0, row=3)
+                self.answer_title_label.grid(column=0, row=4)
+                self.explanation_title_label.grid(column=0, row=5)
+                self.question_label.grid(column=1, row=3)
+                self.answer_label.grid(column=1, row=4)
+                self.explanation_label.grid(column=1, row=5)
+                self.next_quiz_button.grid(column=1, row=6)
+                self.question_label.config(text=self.question)
+                self.answer_label.config(text=self.quiz.answer)
+                self.explanation_label.config(text=self.quiz.explanation)
+                self.next_quiz_button.focus_set()
+                self.widgets += [
+                    self.question_title_label,
+                    self.answer_title_label,
+                    self.explanation_title_label,
+                    self.question_label,
+                    self.answer_label,
+                    self.explanation_label,
+                    self.next_quiz_button,
+                ]
+
+                # save log
+                date = datetime.datetime.now().isoformat()
+                self.logger.save_log(
+                    date,
+                    is_correct,
+                    self.quiz.question,
+                    self.quiz.answer,
+                    self.quiz.explanation,
                 )
-        self.player_input.set("")
-        self.accuracy_rate_label.config(
-            text=f"正答率: {self.correct} [問] / {self.answered_num} [問]"
-        )
-
-        date = datetime.datetime.now().isoformat()
-        self.logger.save_log(
-            date,
-            is_correct,
-            self.quiz.question,
-            self.quiz.answer,
-            self.quiz.explanation,
-        )
-        self.is_saved = True
-
-        self.root.after(500, self.new_quiz)
+                self.is_saved = True
+                # self.root.after(500, self.update_quiz_screen)
+            case self.TIME_LIMIT:
+                pass
+            case self.FIXED_QUIZ:
+                pass
+            case _:
+                raise ValueError(f"{quiz_mode} is invalid quiz mode.")
 
     @staticmethod
     def str2positive_int(s: str, default: int, min_limit: int, max_limit: int) -> int:
