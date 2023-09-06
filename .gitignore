@@ -160,5 +160,9 @@ cython_debug/
 #.idea/
 
 
-# original files
+# original quiz log files updated frequently
 assets/database/.quiz_log.db
+
+# assets files downloaded from somewhere
+assets/sound/
+assets/image/
