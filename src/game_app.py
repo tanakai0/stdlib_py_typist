@@ -273,7 +273,6 @@ class TypingGameApp:
             return
         _id = int(selected_id[0])
         self.quizzes = self.quizzes_list[_id]
-        print(self.quizzes.name)
 
     def setup_endless_quiz_screen(self) -> None:
         self.unset_screen()
