@@ -7,12 +7,11 @@ import winsound
 from tkinter import ttk
 
 from src import dynamic_quizzes
-from src.quiz import StaticQuizzes
+from src.quiz import Quiz, StaticQuizzes
 from src.quiz_database import DATABASE_FOLDER, QUIZ_LOG_FILE, QuizLogger
 
 
 class TypingGameApp:
-    N, W, E, S = tk.N, tk.W, tk.E, tk.S
     ENDLESS_QUIZ = "Endless Quiz"
     TIME_LIMIT = "Time Limit"
     FIXED_QUIZ = "Fixed Quiz"
@@ -49,6 +48,8 @@ class TypingGameApp:
         self.mainframe = ttk.Frame(root, padding=(3, 3, 12, 12))
 
         # widgets in the title screen
+        # self.title_background_image = tk.PhotoImage(master = self.mainframe, file='./assets/image/ichimatsu_lightblue-300x300.png')
+        # self.title_background = tk.Label(self.mainframe, image=self.title_background_image, width=300, height = 200)
         self.title_label = tk.Label(
             self.mainframe, text="Typing Game", font=("Helvetica", 36)
         )
@@ -90,7 +91,7 @@ class TypingGameApp:
             self.mainframe, text="クイズ開始", command=self.push_quiz_start_button
         )
         self.return_to_title_button = tk.Button(
-            self.mainframe, text="戻る", command=self.setup_title_screen
+            self.mainframe, text="タイトルに戻る", command=self.setup_title_screen
         )
         self.seconds_limit = tk.StringVar()
         self.default_seconds_limit = 60 * 2
@@ -140,7 +141,7 @@ class TypingGameApp:
         )
 
         # widgets in the quiz screen
-        self.text_label = tk.Label(self.mainframe, text="", font=("Helvetica", 24))
+        self.text_label = tk.Label(self.mainframe, text="", font=("Helvetica", 24), justify=tk.LEFT)
         self.player_answer = tk.StringVar()
         self.player_answer_entry = tk.Entry(
             self.mainframe, textvariable=self.player_answer, font=("Helvetica", 18)
@@ -160,9 +161,9 @@ class TypingGameApp:
         self.question_title_label = tk.Label(self.mainframe, text="問題：")
         self.answer_title_label = tk.Label(self.mainframe, text="正答：")
         self.explanation_title_label = tk.Label(self.mainframe, text="解説：")
-        self.question_label = tk.Label(self.mainframe, text="")
-        self.answer_label = tk.Label(self.mainframe, text="")
-        self.explanation_label = tk.Label(self.mainframe, text="")
+        self.question_label = tk.Label(self.mainframe, text="", anchor = tk.W, justify=tk.LEFT)
+        self.answer_label = tk.Label(self.mainframe, text="", anchor = tk.W, justify=tk.LEFT)
+        self.explanation_label = tk.Label(self.mainframe, text="", anchor = tk.W, justify=tk.LEFT)
         self.next_quiz_button = tk.Button(
             self.mainframe, text="次へ (Enter)", command=self.update_quiz_screen
         )
@@ -176,8 +177,7 @@ class TypingGameApp:
             self.mainframe, text="モード選択に戻る", command=self.setup_mode_selection_screen
         )
 
-        # widgets in the quiz log screen
-        self.quiz_logs = self.generate_quiz_logs_table()
+        # widgets in the quiz logs screen
 
         # initial screen
         self.setup_title_screen()
@@ -197,9 +197,9 @@ class TypingGameApp:
             self.mainframe, columns=column, height=5, selectmode="browse"
         )
         quiz_logs_table.column("#0", width=0, stretch="no")
-        quiz_logs_table.column(_id, anchor="w", width=100)
-        quiz_logs_table.column(date, anchor="w", width=200)
-        quiz_logs_table.column(player_result, anchor="w", width=50)
+        quiz_logs_table.column(_id, anchor="w", width=60)
+        quiz_logs_table.column(date, anchor="w", width=170)
+        quiz_logs_table.column(player_result, anchor="w", width=40)
         quiz_logs_table.column(question, anchor="w", width=300)
         quiz_logs_table.column(answer, anchor="w", width=300)
         quiz_logs_table.column(explanation, anchor="w", width=300)
@@ -222,21 +222,24 @@ class TypingGameApp:
             else:
                 player_result = "X"
             values = (i, log[1], player_result, log[3], log[4], log[5])
-            quiz_logs_table.insert(parent="", index="end", values=values)
+            quiz_logs_table.insert(parent="", iid=i, index="end", values=values)
         return quiz_logs_table
+
 
     def setup_title_screen(self) -> None:
         self.unset_screen()
-        self.mainframe.grid(row=0, column=0, sticky=(self.N, self.S, self.E, self.W))
+        self.mainframe.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+        # self.title_background.grid(row=0, column = 0, rowspan=2, columnspan=2)
         # self.resizable_mode()
         if self.sound_available:
             winsound.PlaySound(
                 self.title_music,
                 winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_LOOP,
             )
-        self.title_label.grid(column=0, row=0, columnspan=5, pady=20)
-        self.title_start_button.grid(column=0, row=5, columnspan=4, pady=5)
-        self.show_quiz_logs_button.grid(column=4, row=5, pady=5)
+        self.title_label.grid(column=0, row=0, columnspan=2, pady=20)
+        self.title_start_button.grid(column=0, row=1, pady=5)
+        self.show_quiz_logs_button.grid(column=1, row=1, pady=5)
+        
         self.widgets += [
             self.title_label,
             self.title_start_button,
@@ -277,11 +280,11 @@ class TypingGameApp:
         self.unset_screen()
         self.quizzes_table.grid(column=0, row=0, columnspan=5)
         self.quiz_mode_label.grid(column=0, row=1, rowspan=3)
-        self.endless_quiz_radio_button.grid(column=1, row=1, sticky=self.W)
-        self.time_limit_radio_button.grid(column=1, row=2, sticky=self.W)
-        self.fixed_quiz_radio_button.grid(column=1, row=3, sticky=self.W)
-        self.seconds_limit_spinbox.grid(column=2, row=2, sticky=self.W)
-        self.num_limit_spinbox.grid(column=2, row=3, sticky=self.W)
+        self.endless_quiz_radio_button.grid(column=1, row=1, sticky=tk.W)
+        self.time_limit_radio_button.grid(column=1, row=2, sticky=tk.W)
+        self.fixed_quiz_radio_button.grid(column=1, row=3, sticky=tk.W)
+        self.seconds_limit_spinbox.grid(column=2, row=2, sticky=tk.W)
+        self.num_limit_spinbox.grid(column=2, row=3, sticky=tk.W)
         self.quiz_start_button.grid(column=4, row=1, rowspan=3)
         self.return_to_title_button.grid(column=3, row=1, rowspan=3)
         self.widgets += [
@@ -378,14 +381,15 @@ class TypingGameApp:
                     font=("Helvetica", 12),
                 )
                 self.accuracy_rate_label.grid(
-                    row=0, column=0, columnspan=2, sticky=self.W
+                    row=0, column=0, columnspan=3, sticky=tk.W
                 )
                 self.elapsed_minutes_label.grid(
-                    row=1, column=0, columnspan=2, sticky=self.W, pady=10
+                    row=1, column=0, columnspan=3, sticky=tk.W, pady=10
                 )
-                result_logs.grid(row=2, column=0, columnspan=2)
+                result_logs.grid(row=2, column=0, columnspan=3)
                 self.retry_button.grid(row=3, column=0)
                 self.return_to_mode_selection_button.grid(row=3, column=1)
+                self.return_to_title_button.grid(row=3, column=2)
                 self.widgets += [
                     self.accuracy_rate_label,
                     self.accuracy_rate_label,
@@ -393,6 +397,7 @@ class TypingGameApp:
                     result_logs,
                     self.retry_button,
                     self.return_to_mode_selection_button,
+                    self.return_to_title_button
                 ]
             case self.TIME_LIMIT:
                 pass
@@ -402,11 +407,76 @@ class TypingGameApp:
                 raise ValueError(f"{quiz_mode} is invalid quiz mode.")
 
     def setup_quiz_logs_screen(self) -> None:
+        def select_log(event = None) -> None:
+            selected_id = quiz_logs.selection()
+            if not (selected_id):
+                return
+            _id = int(selected_id[0])
+            log = quiz_logs.item(_id, "values")
+            self.log_quiz = Quiz(log[3], log[4], log[5])
+            if self.detail_toggle.get() == self.detail_toggle_ON_text:
+                self.log_question_label.config(text=self.log_quiz.question)
+                self.log_answer_label.config(text=self.log_quiz.answer)
+                self.log_explanation_label.config(text=self.log_quiz.explanation)
+        def toggle_details(event = None) -> None:
+            if self.detail_toggle.get() == self.detail_toggle_ON_text:
+                self.detail_toggle.set(self.detail_toggle_OFF_text)
+                for w in self.widgets[-6:]:
+                    w.grid_forget()
+                self.widgets = self.widgets[:-6]
+            else:
+                self.detail_toggle.set(self.detail_toggle_ON_text)
+                self.question_title_label.grid(column=0, row=2)
+                self.answer_title_label.grid(column=0, row=3)
+                self.explanation_title_label.grid(column=0, row=4)
+                self.log_question_label.grid(column=1, row=2, sticky=tk.W)
+                self.log_answer_label.grid(column=1, row=3, sticky=tk.W)
+                self.log_explanation_label.grid(column=1, row=4, sticky=tk.W)
+                if self.log_quiz is not None:
+                    self.log_question_label.config(text=self.log_quiz.question)
+                    self.log_answer_label.config(text=self.log_quiz.answer)
+                    self.log_explanation_label.config(text=self.log_quiz.explanation)
+                self.widgets += [self.question_title_label,
+                        self.answer_title_label,
+                        self.explanation_title_label,
+                        self.log_question_label,
+                        self.log_answer_label,
+                        self.log_explanation_label]
         self.unset_screen()
-        self.quiz_logs.grid(column=0, row=0)
-        self.return_to_title_button.grid(column=0, row=1)
-        self.widgets += [self.quiz_logs, self.return_to_title_button]
+        
+        self.log_question_label = tk.Label(self.mainframe, text="", anchor = tk.W, justify=tk.LEFT)
+        self.log_answer_label = tk.Label(self.mainframe, text="", anchor = tk.W, justify=tk.LEFT)
+        self.log_explanation_label = tk.Label(self.mainframe, text="", anchor = tk.W, justify=tk.LEFT)
+        self.detail_toggle_ON_text = "詳細ON（Enter で OFF）"
+        self.detail_toggle_OFF_text = "詳細OFF（Enter で ON）"
+        self.detail_toggle = tk.StringVar()
+        self.detail_toggle_button = tk.Button(self.mainframe, textvariable=self.detail_toggle, command=toggle_details)
+        self.detail_toggle_button.bind("<Return>", toggle_details)
 
+        self.detail_toggle.set(self.detail_toggle_OFF_text)
+        quiz_logs = self.generate_quiz_logs_table()
+        quiz_logs.bind("<<TreeviewSelect>>", select_log)
+
+        scrollbar = ttk.Scrollbar(self.mainframe, orient="vertical", command=quiz_logs.yview)
+        quiz_logs.configure(yscrollcommand=scrollbar.set)
+
+        self.log_quiz = None
+        if len(quiz_logs.get_children()):
+            quiz_logs.selection_set(0)
+            quiz_logs.focus(0)
+            log = quiz_logs.item(0, "values")
+            self.log_quiz = Quiz(log[3], log[4], log[5])
+        
+        quiz_logs.grid(row=0, column=0, rowspan = 2, columnspan = 2)
+        scrollbar.grid(row=0, column=2, rowspan = 2, sticky=(tk.N, tk.S))
+        self.detail_toggle_button.grid(row=0, column=3)
+        self.return_to_title_button.grid(row = 1, column=3)
+        self.widgets += [quiz_logs, scrollbar, self.return_to_title_button, self.return_to_title_button, self.detail_toggle_button]
+        
+        
+
+
+            
     def resizable_mode(self) -> None:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
@@ -444,9 +514,9 @@ class TypingGameApp:
                 self.question_title_label.grid(column=0, row=3)
                 self.answer_title_label.grid(column=0, row=4)
                 self.explanation_title_label.grid(column=0, row=5)
-                self.question_label.grid(column=1, row=3)
-                self.answer_label.grid(column=1, row=4)
-                self.explanation_label.grid(column=1, row=5)
+                self.question_label.grid(column=1, row=3, sticky=tk.W)
+                self.answer_label.grid(column=1, row=4, sticky=tk.W)
+                self.explanation_label.grid(column=1, row=5, sticky=tk.W)
                 self.next_quiz_button.grid(column=1, row=6)
                 self.question_label.config(text=self.question)
                 self.answer_label.config(text=self.quiz.answer)
