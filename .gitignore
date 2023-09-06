@@ -164,5 +164,5 @@ cython_debug/
 assets/database/.quiz_log.db
 
 # assets files downloaded from somewhere
-assets/sound/
-assets/image/
+# assets/sound/
+# assets/image/
