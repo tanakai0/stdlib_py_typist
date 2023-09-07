@@ -1,15 +1,11 @@
 import tkinter as tk
-from pathlib import Path
 
 from src import game_app
 
 
 def main():
     root = tk.Tk()
-    # database_path = Path("./assets/database/test_typing.db")
-    # database_path = Path("./assets/database/test_kanji.db")
-    database_path = Path("./assets/database/test_kencho.db")
-    _ = game_app.TypingGameApp(root, database_path)
+    _ = game_app.TypingGameApp(root)
     root.mainloop()
 
 

@@ -4,6 +4,8 @@ from typing import Optional
 
 from src.quiz import Quiz, Quizzes
 
+# In this module, Quizzes classes are dynamically generated.
+# Such dynamically quizzes are only allow to be written in this module.
 
 class JulianGregorianDOWQuizzes(Quizzes):
     """
