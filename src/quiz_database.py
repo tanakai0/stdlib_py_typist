@@ -261,10 +261,20 @@ def main():
     create_database(TestKencho)
     create_database(FizzBuzz)
 
-    logs = QuizLogger().load_log()
+    logger = QuizLogger()
+    logs = logger.load_log()
     for log in logs:
         print(log)
+    logger.close_log_connection()
 
+    # stress test
+    # logger = QuizLogger()
+    # import datetime
+    # test_log = (datetime.datetime.now().isoformat(), False, "Test 用のクイズ文章", "Test 用の回答文章", "Test 用の解説文章")
+    # for _ in range(10000):
+    #     logger.save_log(*test_log)
+    # logger.close_log_connection()
+    
 
 if __name__ == "__main__":
     main()
