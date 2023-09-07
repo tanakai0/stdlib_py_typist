@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from functools import wraps
 
+
 class throttle(object):
     """
     Decorator that prevents a function from being called more than once every time period.
@@ -17,15 +18,14 @@ class throttle(object):
         @throttle(minutes=1)
         def my_fun():
             pass
-    
+
     Reference
     ---------
     https://gist.github.com/ChrisTM/5834503
     """
+
     def __init__(self, seconds=0, minutes=0, hours=0):
-        self.throttle_period = timedelta(
-            seconds=seconds, minutes=minutes, hours=hours
-        )
+        self.throttle_period = timedelta(seconds=seconds, minutes=minutes, hours=hours)
         self.time_of_last_call = datetime.min
 
     def __call__(self, fn):

@@ -7,6 +7,7 @@ from src.quiz import Quiz, Quizzes
 # In this module, Quizzes classes are dynamically generated.
 # Such dynamically quizzes are only allow to be written in this module.
 
+
 class JulianGregorianDOWQuizzes(Quizzes):
     """
     Quiz of the day of the week in the Gregorian calendar.
@@ -161,7 +162,7 @@ class JulianGregorianDOWQuizzes(Quizzes):
                 return True
             else:
                 return False
-            
+
         year = d.year
         if self.is_proleptic_Gregorian_calendar:
             return check_Gregorian_leap_year(year)
