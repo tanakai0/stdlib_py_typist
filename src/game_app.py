@@ -9,6 +9,7 @@ from tkinter import ttk
 from src import dynamic_quizzes
 from src.quiz import Quiz, StaticQuizzes
 from src.quiz_database import DATABASE_FOLDER, QUIZ_LOG_FILE, QuizLogger
+from src.utils import throttle
 
 
 class TypingGameApp:
@@ -426,11 +427,11 @@ class TypingGameApp:
                 self.widgets = self.widgets[:-6]
             else:
                 self.detail_toggle.set(self.detail_toggle_ON_text)
-                self.question_title_label.grid(column=0, row=2)
-                self.answer_title_label.grid(column=0, row=3)
+                self.question_title_label.grid(column=0, row=2, pady = 8)
+                self.answer_title_label.grid(column=0, row=3, pady = 8)
                 self.explanation_title_label.grid(column=0, row=4)
-                self.log_question_label.grid(column=1, row=2, sticky=tk.W)
-                self.log_answer_label.grid(column=1, row=3, sticky=tk.W)
+                self.log_question_label.grid(column=1, row=2, sticky=tk.W, pady = 8)
+                self.log_answer_label.grid(column=1, row=3, sticky=tk.W, pady = 8)
                 self.log_explanation_label.grid(column=1, row=4, sticky=tk.W)
                 if self.log_quiz is not None:
                     self.log_question_label.config(text=self.log_quiz.question)
@@ -451,7 +452,6 @@ class TypingGameApp:
         self.detail_toggle_OFF_text = "詳細OFF（Enter で ON）"
         self.detail_toggle = tk.StringVar()
         self.detail_toggle_button = tk.Button(self.mainframe, textvariable=self.detail_toggle, command=toggle_details)
-        self.detail_toggle_button.bind("<Return>", toggle_details)
 
         self.detail_toggle.set(self.detail_toggle_OFF_text)
         quiz_logs = self.generate_quiz_logs_table()
@@ -472,9 +472,6 @@ class TypingGameApp:
         self.detail_toggle_button.grid(row=0, column=3)
         self.return_to_title_button.grid(row = 1, column=3)
         self.widgets += [quiz_logs, scrollbar, self.return_to_title_button, self.return_to_title_button, self.detail_toggle_button]
-        
-        
-
 
             
     def resizable_mode(self) -> None:
@@ -486,6 +483,7 @@ class TypingGameApp:
         self.mainframe.columnconfigure(3, weight=1)
         self.mainframe.rowconfigure(1, weight=1)
 
+    @throttle(seconds = 0.3)
     def set_feedback_screen(self, event) -> None:
         quiz_mode = self.quiz_mode.get()
         player_answer = self.player_answer.get()
@@ -511,11 +509,11 @@ class TypingGameApp:
                     text=f"正答率： {self.correct} 問 / {self.answered_num} 問"
                 )
 
-                self.question_title_label.grid(column=0, row=3)
-                self.answer_title_label.grid(column=0, row=4)
+                self.question_title_label.grid(column=0, row=3, pady = 8)
+                self.answer_title_label.grid(column=0, row=4, pady = 8)
                 self.explanation_title_label.grid(column=0, row=5)
-                self.question_label.grid(column=1, row=3, sticky=tk.W)
-                self.answer_label.grid(column=1, row=4, sticky=tk.W)
+                self.question_label.grid(column=1, row=3, sticky=tk.W, pady = 8)
+                self.answer_label.grid(column=1, row=4, sticky=tk.W, pady = 8)
                 self.explanation_label.grid(column=1, row=5, sticky=tk.W)
                 self.next_quiz_button.grid(column=1, row=6)
                 self.question_label.config(text=self.question)
