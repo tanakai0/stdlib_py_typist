@@ -1,6 +1,6 @@
 import random
 from datetime import date, timedelta
-from typing import Optional
+from typing import Optional, Tuple
 
 from src.quiz import Quiz, Quizzes
 
@@ -183,6 +183,51 @@ class ProlepticGregorianDOWQuizzes(JulianGregorianDOWQuizzes):
         description = "先発グレゴリオ暦で西暦1年1月1日～西暦9999年12月31日から選ばれた日の曜日を当てよう！"
         super().__init__(name, description, is_proleptic_Gregorian_calendar=True)
 
+
+class MultiplicationNDigitsQuizzes(Quizzes):
+    """
+    Set of quiz generated dynamically.
+    """
+
+    def __init__(self, d: int = 2) -> None:
+        """
+        Parameters
+        ----------
+        d : int
+            Maximum number of digits for the numbers in the quiz.
+            d > 0.
+        """
+        self.d = d
+        name = f"{self.d}桁×{self.d}桁"
+        description = f"最大{self.d}桁の2つの自然数の掛け算をランダムで出題"
+        super().__init__(name, description)
+        
+
+    def generate_quiz(self) -> Tuple[str, str]:
+        """
+        Generate a multiplication quiz with numbers up to d digits.
+
+        Examples
+        --------
+        >>> generate_quiz(2)
+        ("23 x 41 = ?", "943")
+        """
+
+        min_value = 2
+        max_value = 10**self.d - 1
+
+        num1 = random.randint(min_value, max_value)
+        num2 = random.randint(min_value, max_value)
+
+        question = f"{num1} × {num2} = ?"
+        answer = str(num1 * num2)
+        explanation = ""
+
+        return Quiz(question, answer, explanation)
+
+class MultiplicationThreeDigitsQuizzes(MultiplicationNDigitsQuizzes):
+    def __init__(self) -> None:
+        super().__init__(d=3)
 
 # Template
 # class DynamicQuizzes(Quizzes):
