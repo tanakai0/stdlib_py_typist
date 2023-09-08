@@ -13,8 +13,9 @@ class Timer:
         self.start_time = time.time()
 
     def stop(self) -> float:
-        self.end_time = time.time()
-        self.total_seconds = self.end_time - self.start_time
+        if not self.is_stopped():
+            self.end_time = time.time()
+            self.total_seconds = self.end_time - self.start_time
 
     def is_stopped(self) -> bool:
         return self.end_time is not None

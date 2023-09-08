@@ -4,6 +4,7 @@ import platform
 import textwrap
 import tkinter as tk
 import winsound
+from functools import partial
 from tkinter import ttk
 from typing import List
 
@@ -162,8 +163,12 @@ class TypingGameApp:
         self.show_result_button = tk.Button(
             self.mainframe, text="終了", command=self.setup_results_screen
         )
-        self.quit_button = tk.Button(
-            self.mainframe, text="リタイア", command=self.setup_results_screen
+        # self.quit_button = tk.Button(
+        #     self.mainframe, text="リタイア", command=self.setup_feedback_screen
+        # )
+        self.quit_button = tk.Button(self.mainframe, text="リタイア")
+        self.quit_button.bind(
+            "<Button-1>", partial(self.setup_feedback_screen, no_answer=True)
         )
 
         # widgets in the feedback screen
@@ -302,14 +307,14 @@ class TypingGameApp:
                 self.widgets += [self.show_result_button]
             case self.TIME_LIMIT:
                 self.timer = CountDownTimer(int(self.seconds_limit.get()))
-                self.quiz_incomplete = True
+                self.quiz_completete = False
                 quiz_num_text = "正答率： 0 問 / 0 問"
                 quiz_time_text = f"残り時間: {self.seconds_limit} 秒"
                 self.quit_button.grid(column=2, row=2)
                 self.widgets += [self.quit_button]
             case self.FIXED_QUIZ:
                 self.timer = Timer()
-                self.quiz_incomplete = True
+                self.quiz_completete = False
                 quiz_num_text = f"控え問題数：{int(self.num_limit.get()) - self.displayed_quiz_count} 問\n 正答率： 0 問 / 0 問"
                 quiz_time_text = "経過時間: 0 秒"
                 self.quit_button.grid(column=2, row=2)
@@ -361,23 +366,27 @@ class TypingGameApp:
             return
         else:
             if self.timer.is_time_over():
+                self.quiz_completete = True
                 self.mainframe.focus_set()
                 self.player_answer_entry.grid_forget()
-                self.setup_results_screen()
+                quiz_time_text = "タイムアップ！"
+                self.quiz_time_text.config(text=quiz_time_text)
+                self.setup_feedback_screen(no_answer=True)
             else:
-                self.quiz_incomplete = False
                 quiz_time_text = f"経過時間: {int(self.timer.get_remaining_time())} 秒"
                 self.quiz_time_text.config(text=quiz_time_text)
-                self.root.after(1000, self.update_count_down_timer)
+            self.root.after(1000, self.update_count_down_timer)
 
     @throttle(seconds=0.5)
-    def setup_feedback_screen(self, event) -> None:
+    def setup_feedback_screen(self, event=None, no_answer=False) -> None:
         quiz_mode = self.quiz_mode.get()
         player_answer = self.player_answer.get()
         is_correct = self.quiz.check_answer(player_answer)
 
         # check the answer
-        if is_correct:
+        if no_answer:
+            self.text_label.config(text="無回答", fg="black")
+        elif is_correct:
             self.correct += 1
             self.text_label.config(text="正解！", fg="green")
             if self.sound_available:
@@ -395,14 +404,22 @@ class TypingGameApp:
 
         # save log
         date = datetime.datetime.now().isoformat()
+        if no_answer:
+            saved_answer = None
+        else:
+            saved_answer = is_correct
         self.logger.save_log(
             date,
-            is_correct,
+            saved_answer,
             self.quiz.question,
             self.quiz.answer,
             self.quiz.explanation,
         )
         self.is_saved = True
+
+        if no_answer:
+            self.root.after(700, self.setup_results_screen)
+            return
 
         match quiz_mode:
             case self.ENDLESS_QUIZ:
@@ -429,19 +446,20 @@ class TypingGameApp:
                     self.next_quiz_button,
                 ]
             case self.TIME_LIMIT:
-                self.root.after(500, self.update_quiz_screen)
+                if self.quiz_completete:
+                    self.root.after(700, self.setup_results_screen)
+                else:
+                    self.root.after(500, self.update_quiz_screen)
             case self.FIXED_QUIZ:
                 if self.displayed_quiz_count >= int(self.num_limit.get()):
-                    self.quiz_incomplete = False
-                    self.setup_results_screen()
+                    self.quiz_completete = True
+                    self.root.after(700, self.setup_results_screen)
                 else:
                     self.root.after(500, self.update_quiz_screen)
             case _:
                 raise ValueError(f"{quiz_mode} is invalid quiz mode.")
 
     def update_quiz_screen(self, event=None) -> None:
-        if self.timer.is_stopped():
-            return
         self.player_answer.set("")
         self.player_answer_entry.focus_set()
         self.new_quiz()
@@ -453,7 +471,9 @@ class TypingGameApp:
                     w.grid_forget()
                 self.widgets = self.widgets[:-7]
             case self.TIME_LIMIT:
-                quiz_num_text = f"正答率： {self.correct} 問 / {self.displayed_quiz_count} 問"
+                quiz_num_text = (
+                    f"正答率： {self.correct} 問 / {self.displayed_quiz_count - 1} 問"
+                )
                 self.quiz_num_text.config(text=quiz_num_text)
             case self.FIXED_QUIZ:
                 quiz_num_text = (
@@ -472,6 +492,8 @@ class TypingGameApp:
         self.displayed_quiz_count += 1
 
     def setup_results_screen(self) -> None:
+        self.mainframe.focus_set()
+        self.player_answer_entry.grid_forget()
         if not self.is_saved:
             date = datetime.datetime.now().isoformat()
             self.logger.save_log(
@@ -498,7 +520,7 @@ class TypingGameApp:
                 quiz_time_text = f"経過時間： {int(minutes)} 分 {seconds:.2f} 秒"
             case self.TIME_LIMIT:
                 quiz_time_text = f"制限時間： {int(self.seconds_limit.get())} 秒"
-                if self.quiz_incomplete:
+                if not self.quiz_completete:
                     quiz_time_text += f" （残り{self.timer.remaining_time_at_stop}秒でリタイア）"
                 score = self.correct / int(self.seconds_limit.get())
                 quiz_num_text += f"\n1秒あたりの正解数（正解数 / 合計時間）： {score:.2f} ［問 / 秒］"
@@ -510,7 +532,7 @@ class TypingGameApp:
                 else:
                     score = f"{self.timer.total_seconds / self.correct :.2f}"
                 quiz_num_text += f"\n正答にかかる平均時間（合計時間 / 正解数）： {score} ［秒 / 問］"
-                if self.quiz_incomplete:
+                if not self.quiz_completete:
                     quiz_num_text += f" （残り {int(self.num_limit.get()) - self.displayed_quiz_count + 1} 問でリタイア）"
             case _:
                 raise ValueError(f"{quiz_mode} is invalid quiz mode.")
