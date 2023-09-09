@@ -42,6 +42,7 @@ class TypingGameApp:
             for name, cls in inspect.getmembers(dynamic_quizzes, inspect.isclass)
             if cls.__module__ == dynamic_quizzes.__name__
         ]
+        self.quizzes_list.sort(key = lambda x: x.name)
         self.overview2index = {(q.name, q.description): q for q in self.quizzes_list}
 
         self.root = root
