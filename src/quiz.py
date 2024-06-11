@@ -25,7 +25,7 @@ class Quiz:
 
 class Quizzes:
     """
-    This holds overviwe information of set of quiz.
+    This holds overview information of set of quiz.
     """
 
     def __init__(self, name: str, description: str) -> None:
