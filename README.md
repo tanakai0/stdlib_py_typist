@@ -2,6 +2,9 @@
 Typing Game (in Japanese) Built with Python Standard Library Created for Personal Practice.  
 This works without any external libraries. No need requirements.txt!  
 
+## Requirements
+- python3
+
 ## How to Use
 1. Clone this repository
 2. Just type `>>>python main.py` or activate `main.exe`
