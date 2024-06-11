@@ -201,7 +201,6 @@ class MultiplicationNDigitsQuizzes(Quizzes):
         name = f"{self.d}桁×{self.d}桁"
         description = f"最大{self.d}桁の2つの自然数の掛け算をランダムで出題"
         super().__init__(name, description)
-        
 
     def generate_quiz(self) -> Tuple[str, str]:
         """
@@ -225,9 +224,11 @@ class MultiplicationNDigitsQuizzes(Quizzes):
 
         return Quiz(question, answer, explanation)
 
+
 class MultiplicationThreeDigitsQuizzes(MultiplicationNDigitsQuizzes):
     def __init__(self) -> None:
         super().__init__(d=3)
+
 
 # Template
 # class DynamicQuizzes(Quizzes):

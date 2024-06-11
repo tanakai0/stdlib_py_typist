@@ -8,7 +8,7 @@ from functools import partial
 from tkinter import ttk
 from typing import List
 
-from src import dynamic_quizzes
+from src import constants, dynamic_quizzes
 from src.quiz import Quiz, StaticQuizzes
 from src.quiz_database import DATABASE_FOLDER, QUIZ_LOG_FILE, QuizLogger
 from src.timer import CountDownTimer, Timer
@@ -30,9 +30,9 @@ class TypingGameApp:
         self.logger = QuizLogger()
 
         if self.sound_available:
-            self.correct_sound = "./assets/sound/pinpon2.wav"
-            self.incorrect_sound = "./assets/sound/bubbu1.wav"
-            self.title_music = "./assets/sound/scene3.wav"
+            self.correct_sound = constants.CORRECT_SOUND_PATH
+            self.incorrect_sound = constants.INCORRECT_SOUND_PATH
+            self.title_music = constants.TITLE_MUSIC_PATH
 
         db_paths = [p for p in DATABASE_FOLDER.glob("*.db") if p != QUIZ_LOG_FILE]
         self.quizzes_list = [StaticQuizzes(p) for p in db_paths]
@@ -42,7 +42,7 @@ class TypingGameApp:
             for name, cls in inspect.getmembers(dynamic_quizzes, inspect.isclass)
             if cls.__module__ == dynamic_quizzes.__name__
         ]
-        self.quizzes_list.sort(key = lambda x: x.name)
+        self.quizzes_list.sort(key=lambda x: x.name)
         self.overview2index = {(q.name, q.description): q for q in self.quizzes_list}
 
         self.root = root
