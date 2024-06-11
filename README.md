@@ -1,6 +1,6 @@
 # stdlib_py_typist
 Typing Game (in Japanese) Built with Python Standard Library Created for Personal Practice.  
-This works without any external libraries (no requirements.txt)!  
+This works without any external libraries. No need requirements.txt!  
 
 ## How to Use
 1. Clone this repository
@@ -16,7 +16,7 @@ This works without any external libraries (no requirements.txt)!
 
 ### Sound Support
 
-1. **Windows OS Only**: This program utilizes the `winsound` library for sound effects. Therefore, sound may not work on operating systems other than Windows.
+1. **Windows OS Only**: This program utilizes the winsound library for sound effects. Therefore, sound may not work on operating systems other than Windows.
 
 ### Database Security
 
