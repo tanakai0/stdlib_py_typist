@@ -12,7 +12,9 @@ This works without any external libraries. No need requirements.txt!
    cd stdlib_py_typist
    ```
 2. Run the game
-   `>>>python main.py`
+   ```sh
+   python main.py
+   ```
    Alternatively, you can activate `main.exe` if provided.
 
 ## 🎵 Sound Configuration
