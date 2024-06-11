@@ -4,13 +4,13 @@ This works without any external libraries (no requirements.txt)!
 
 ## How to Use
 1. Clone this repository
-2. Just type `>>>python main.py`
+2. Just type `>>>python main.py` or activate `main.exe`
 
 ## 🎵 Sound Configuration
 
-- **Windows OS Enhanced**: While the program is designed to run silently by default, Windows users can take full advantage of the winsound library for a more personalized auditory experience!
+- **Windows OS Enhanced**: Windows users can take full advantage of the winsound library particularly optimized for Windows operating systems!
 
-- **How to Configure**: Place your own .wav sound files in the assets/sound directory and rename variables in src/constants.py. Once you've added your sound files, you can set loop soundtracks for different screens as well as configure sounds for correct and incorrect answers via the settings menu, accessible from the title screen. This feature is particularly optimized for Windows operating systems.
+- **How to Configure**: Place your own .wav sound files in the assets/sound directory and rename variables in src/constants.py. Once you've added your sound files, you can set sounds for title screens, correct answers and incorrect answers.
 
 ## ⚠️ Caution
 
