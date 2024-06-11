@@ -7,7 +7,13 @@ This works without any external libraries. No need requirements.txt!
 
 ## How to Use
 1. Clone this repository
-2. Just type `>>>python main.py` or activate `main.exe`
+   ```sh
+   git clone https://github.com/tanakai0/stdlib_py_typist.git
+   cd stdlib_py_typist
+   ```
+2. Run the game
+   `>>>python main.py`
+   Alternatively, you can activate `main.exe` if provided.
 
 ## 🎵 Sound Configuration
 
@@ -32,4 +38,7 @@ This works without any external libraries. No need requirements.txt!
 ### Language in UI
 
 4. **Target Audience and Language**: This project is primarily targeted at a Japanese audience. As such, quiz content, UI text, and some code comments are in Japanese.
+
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
